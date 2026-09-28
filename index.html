@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Finance Racer 🏎️💰</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#07111f;color:#fff}
+button{font:inherit}
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+.card{width:min(920px,100%);padding:28px;border-radius:25px;background:linear-gradient(145deg,#10213a,#0a1526);border:1px solid #294565;box-shadow:0 20px 70px #0009}
+.center{text-align:center}
+.hero{font-size:70px;animation:float 1.8s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+h1{font-size:clamp(40px,8vw,72px);line-height:1;margin:8px 0}
+.sub{color:#abc0d8;font-size:17px}
+.btn{border:0;border-radius:14px;padding:14px 24px;background:#19d3ae;color:#03140f;font-weight:900;cursor:pointer;box-shadow:0 8px 25px #19d3ae44}
+.hidden{display:none!important}
+.game{width:min(1000px,100%);margin:auto}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.stat{background:#132640;border-radius:13px;padding:9px;text-align:center;color:#a9bdd4}
+.stat b{display:block;color:white;font-size:20px;margin-top:2px}
+.track{position:relative;height:275px;border-radius:22px;overflow:hidden;border:2px solid #294363;margin-bottom:15px;background:#63c9ff}
+.sky{position:absolute;inset:0 0 105px;background:linear-gradient(#65caff,#e6f8ff)}
+.city{position:absolute;bottom:105px;left:0;right:0;height:75px;background:repeating-linear-gradient(90deg,#26394b 0 45px,#385065 45px 72px)}
+.road{position:absolute;bottom:0;left:0;right:0;height:110px;background:#292e35;border-top:5px solid #aaa}
+.road:after{content:"";position:absolute;top:49px;left:0;right:0;height:8px;background:repeating-linear-gradient(90deg,#fff 0 55px,transparent 55px 105px);animation:road .45s linear infinite}
+@keyframes road{to{background-position:-105px 0}}
+.finish{position:absolute;right:4%;bottom:0;height:110px;width:24px;background:repeating-conic-gradient(#fff 0 25%,#111 0 50%) 50%/24px 24px}
+.car{position:absolute;z-index:3;left:7%;bottom:39px;font-size:58px;transition:left .55s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 7px 5px #0008)}
+.boost{animation:boost .6s}
+@keyframes boost{50%{transform:scale(1.25) rotate(-3deg)}}
+.progress{height:12px;background:#17283e;border-radius:20px;overflow:hidden;margin-bottom:15px}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,#19d3ae,#648cff);transition:.45s}
+.question{background:#0e1c2f;border:1px solid #294363;border-radius:18px;padding:20px}
+.qnum{color:#19d3ae;font-weight:900}
+.qtext{font-size:22px;font-weight:850;line-height:1.35;margin:8px 0 17px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.answer{background:#182d47;color:#fff;border:1px solid #365270;border-radius:13px;padding:14px;text-align:left;cursor:pointer}
+.answer.correct{background:#145b4f;border-color:#19d3ae}
+.answer.wrong{background:#642e37;border-color:#ff7180}
+.answer:disabled{cursor:default}
+.feedback{text-align:center;min-height:28px;margin-top:12px;font-weight:900}
+.tip{text-align:center;color:#8fa8c2;font-size:13px;margin-top:8px}
+.result-score{font-size:56px;font-weight:950;color:#19d3ae}
+.badge{display:inline-block;padding:8px 14px;background:#182d47;border-radius:999px;color:#c3d4e7;margin:8px}
+@media(max-width:650px){.card{padding:20px}.stats{grid-template-columns:1fr 1fr}.track{height:230px}.sky{bottom:90px}.city{bottom:90px}.road{height:95px}.finish{height:95px}.car{font-size:48px;bottom:32px}.answers{grid-template-columns:1fr}.qtext{font-size:19px}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen">
+<div class="card center">
+<div class="hero">🏎️💨</div>
+<h1>FINANCE RACER</h1>
+<p class="sub">Answer finance questions, activate turbo boosts and race to the finish line! 🏁</p>
+<p>🚀 Correct = <b>+100 points & turbo</b></p>
+<p>💥 Wrong = <b>lose a life & slow down</b></p>
+<p>❤️ 3 Lives &nbsp; • &nbsp; ⏱️ 60 Seconds &nbsp; • &nbsp; 🏁 10 Questions</p>
+<br><button class="btn" onclick="startGame()">START RACE 🚦</button>
+</div>
+</section>
+
+<section id="game" class="screen hidden">
+<div class="game">
+<div class="stats">
+<div class="stat">🏆 SCORE<b id="score">0</b></div>
+<div class="stat">❤️ LIVES<b id="lives">❤️❤️❤️</b></div>
+<div class="stat">⏱️ TIME<b id="timer">60</b></div>
+<div class="stat">🏁 LAP<b id="lap">1/10</b></div>
+</div>
+<div class="track">
+<div class="sky"></div><div class="city"></div><div class="road"></div>
+<div class="finish"></div><div id="car" class="car">🏎️</div>
+</div>
+<div class="progress"><div id="bar"></div></div>
+<div class="question">
+<div class="qnum" id="qnum">QUESTION 1</div>
+<div class="qtext" id="qtext"></div>
+<div class="answers" id="answers"></div>
+<div class="feedback" id="feedback"></div>
+</div>
+<div class="tip">💡 Think like a smart financial racer!</div>
+</div>
+</section>
+
+<section id="result" class="screen hidden">
+<div class="card center">
+<div class="hero">🏆</div>
+<h1>RACE COMPLETE!</h1>
+<div class="result-score" id="finalScore">0</div>
+<div id="rank" class="badge">Finance Rookie</div>
+<p id="resultText" class="sub"></p>
+<p id="breakdown"></p>
+<br><button class="btn" onclick="startGame()">RACE AGAIN 🔄</button>
+</div>
+</section>
+
+<script>
+const questions=[
+["What does UPI stand for?",["Unified Payments Interface","Universal Payment Internet","United Payment Identity","User Payment Interface"],0],
+["₹10,000 at 10% simple interest for 2 years earns how much interest?",["₹1,000","₹2,000","₹2,200","₹12,000"],1],
+["What is KYC mainly used for?",["Increasing interest rates","Knowing and verifying customers","Reducing internet speed","Creating stock prices"],1],
+["Inflation generally means...",["A fall in all prices","A sustained rise in the general price level","A rise in bank branches","Free money from banks"],1],
+["Which is a digital payment method?",["UPI","Cash in a box","Paper ledger","A handwritten note"],0],
+["A credit score generally provides information about...",["Height","Credit repayment history and risk","Bank branch size","Stock market opening time"],1],
+["Which practice can reduce investment risk?",["Putting everything in one asset","Diversification","Ignoring information","Borrowing without planning"],1],
+["A budget is mainly used to...",["Track and plan income and expenses","Guarantee profits","Increase taxes","Avoid records"],0],
+["Which is a common cybersecurity warning sign?",["Checking an official bank statement","A message asking for your OTP or password","Using 2FA","Updating an official app"],1],
+["Compound interest is calculated on...",["Only the original principal","Principal plus accumulated interest","Only taxes","Only transaction fees"],1]
+];
+
+let i=0,score=0,lives=3,time=60,correct=0,timer;
+
+function startGame(){
+ i=0;score=0;lives=3;time=60;correct=0;
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("result").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ clearInterval(timer);
+ timer=setInterval(()=>{time--;document.getElementById("timer").textContent=time;if(time<=0)finish()},1000);
+ update();show();
+}
+function update(){
+ document.getElementById("score").textContent=score;
+ document.getElementById("lives").textContent="❤️".repeat(lives)+"🖤".repeat(3-lives);
+ document.getElementById("lap").textContent=Math.min(i+1,10)+"/10";
+ document.getElementById("bar").style.width=(i/10*100)+"%";
+}
+function show(){
+ if(i>=10){finish();return}
+ const q=questions[i];
+ document.getElementById("qnum").textContent="QUESTION "+(i+1);
+ document.getElementById("qtext").textContent=q[0];
+ document.getElementById("feedback").textContent="";
+ const box=document.getElementById("answers");box.innerHTML="";
+ q[1].forEach((a,n)=>{
+  const b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+n)+". "+a;
+  b.onclick=()=>answer(n,b);box.appendChild(b);
+ });
+}
+function answer(choice,button){
+ const q=questions[i];
+ document.querySelectorAll(".answer").forEach(x=>x.disabled=true);
+ if(choice===q[2]){
+  button.classList.add("correct");score+=100;correct++;
+  document.getElementById("feedback").textContent="🚀 CORRECT! TURBO BOOST +100!";
+  const car=document.getElementById("car");car.classList.add("boost");car.style.left=Math.min(7+(i+1)*8.5,86)+"%";
+  setTimeout(()=>car.classList.remove("boost"),650);beep(700,.1);
+ }else{
+  button.classList.add("wrong");
+  document.querySelectorAll(".answer")[q[2]].classList.add("correct");
+  lives--;document.getElementById("feedback").textContent="💥 WRONG! Correct answer highlighted.";
+  beep(180,.18);
+  if(lives<=0){update();setTimeout(finish,850);return}
+ }
+ update();
+ setTimeout(()=>{i++;update();show()},850);
+}
+function finish(){
+ clearInterval(timer);
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("result").classList.remove("hidden");
+ document.getElementById("finalScore").textContent=score+" POINTS";
+ let rank="Finance Rookie",msg="Keep practicing — every race builds your finance skills!";
+ if(score>=900){rank="🏆 Finance Champion";msg="Outstanding! Your financial knowledge has turbo power."}
+ else if(score>=700){rank="🥇 Finance Pro";msg="Great race! You made strong decisions under pressure."}
+ else if(score>=500){rank="🥈 Finance Driver";msg="Nice run! Keep practicing to become a champion."}
+ document.getElementById("rank").textContent=rank;
+ document.getElementById("resultText").textContent=msg;
+ document.getElementById("breakdown").textContent="Correct: "+correct+"/10 • Accuracy: "+Math.round(correct*10)+"% • Time left: "+time+"s";
+}
+function beep(f,d){
+ try{let A=window.AudioContext||window.webkitAudioContext;if(!A)return;let c=new A(),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;g.gain.setValueAtTime(.05,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d)}catch(e){}
+}
+</script>
+</body>
+</html>
